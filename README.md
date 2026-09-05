@@ -1,16 +1,16 @@
-# Robot Delivery Route Ensemble
+# 로봇 배송 경로 최적화 앙상블
 
-> Exact route optimization meets machine-learning policy design — evaluated with a preregistered sealed holdout.
+> 정확 경로 최적화와 머신러닝 정책을 결합하고, 사전 등록한 봉인 평가로 일반화 성능을 검증한 프로젝트입니다.
 
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Validation](https://img.shields.io/badge/Sealed_Holdout-4%2C800_episodes-2E8B57)](#results)
-[![Tests](https://img.shields.io/badge/Automated_Tests-114_passing-4C8BF5)](#engineering-quality)
+[![검증](https://img.shields.io/badge/봉인_Holdout-4%2C800_episodes-2E8B57)](#최종-결과)
+[![테스트](https://img.shields.io/badge/자동화_테스트-114개_통과-4C8BF5)](#엔지니어링-품질)
 
 ## 한눈에 보기
 
-8×8 로봇 배송 환경에서 **정확 경로 탐색과 ML 모방 정책을 결합**하고, 개발 과정과 분리된 봉인 Holdout으로 일반화 성능을 검증한 프로젝트입니다.
+8×8 격자 환경에서 로봇이 물품을 수령해 목적지까지 배송하는 경로를 탐색합니다. 정확 알고리즘으로 생성한 최적 경로를 학습 데이터로 사용하고, 머신러닝 모방 정책과 확률 앙상블을 실제 에피소드에 적용했습니다.
 
-- 봉인 Holdout **1,200개 미관측 레이아웃·4,800개 에피소드**
+- 봉인 Holdout **1,200개 미관측 레이아웃·4,800개 에피소드** 평가
 - 배송 성공률 **100%**, 최단 경로 성공률 **94.48%**, 타임아웃 **0건**
 - 양방향 BFS로 단방향 BFS 대비 탐색 확장 노드 **42.7%**, 생성 노드 **26.8% 감소**
 - 정책·평가기·데이터 해시를 결과 확인 전에 사전 등록하여 평가 누수 통제
@@ -18,89 +18,104 @@
 
 > **이력서 요약:** 정확 경로 탐색과 ML 모방 정책을 결합하고, 정책·평가기를 사전 등록한 봉인 Holdout 4,800개 에피소드에서 배송 성공률 100%·최단 경로 성공률 94.48%·타임아웃 0건을 검증했습니다.
 
-## Overview
+## 프로젝트 공개 범위
 
-This portfolio page summarizes a Kaggle-style robot-delivery project conducted in a private development repository. The task is to navigate an 8×8 grid, pick up an item, and deliver it while minimizing path length and avoiding cycles or timeouts.
+이 저장소는 비공개 개발 저장소의 결과를 채용 포트폴리오용으로 정리한 공개 요약본입니다. 대회 데이터, 학습 가중치, 원본 소스 코드, 팀 내부 자료는 포함하지 않습니다.
 
-The project compares exact solvers with imitation-learning policies, then combines the strongest models into a rollout-tested ensemble. This public repository intentionally contains no competition data, trained weights, private source code, or team-internal artifacts.
+## 해결한 문제
 
-## What I worked on
+단순히 다음 행동을 잘 예측하는 모델이 아니라 다음 조건을 만족하는 정책을 만드는 것이 목표였습니다.
 
-- Compared six exact solvers: BFS, bidirectional BFS, reverse BFS, min-cost flow, MILP, and CP-SAT.
-- Trained and evaluated eight model families, including logistic regression, Extra Trees, CatBoost, XGBoost, and LightGBM.
-- Designed layout-grouped cross-validation to prevent samples from the same map leaking across folds.
-- Separated teacher-forced metrics from end-to-end rollout metrics.
-- Added agent-relative wall features, probability ensembles, and a cycle-avoidance decoder.
-- Preregistered the final policy, evaluator, and data hash before opening the sealed holdout.
+1. 물품을 정상적으로 수령하고 목적지까지 배송할 것
+2. 반복 이동과 순환 경로를 피할 것
+3. 가능한 경우 최단 경로를 선택할 것
+4. 처음 보는 레이아웃에서도 성능을 유지할 것
 
-## Evaluation design
+## 담당 내용
+
+- BFS, 양방향 BFS, Reverse BFS, Min-cost flow, MILP, CP-SAT 등 정확 Solver 6종 비교
+- Logistic Regression, Extra Trees, CatBoost, XGBoost, LightGBM 등 ML 모델 8종 학습·평가
+- 동일 레이아웃이 학습과 검증에 동시에 포함되지 않도록 `layout_id` 단위 Group Cross-Validation 설계
+- Teacher-forced 지표와 실제 Rollout 지표를 분리해 평가
+- Agent-relative wall feature, 확률 앙상블, cycle-avoidance decoder 적용
+- 최종 정책·평가기·데이터 해시를 봉인 평가 전에 커밋으로 사전 등록
+
+## 실험 및 평가 구조
 
 ```mermaid
 flowchart LR
-    A[Exact solvers generate expert paths] --> B[Grouped training data]
-    B --> C[5-fold CV by layout_id]
-    C --> D[Model and feature experiments]
-    D --> E[Rollout evaluation]
-    E --> F[Final policy preregistration]
-    F --> G[Sealed holdout: 1,200 unseen layouts]
+    A[정확 Solver로 최적 경로 생성] --> B[레이아웃 단위 학습 데이터 구성]
+    B --> C[layout_id 기준 5-Fold Group CV]
+    C --> D[모델·특성 실험]
+    D --> E[실제 에피소드 Rollout 평가]
+    E --> F[최종 정책 사전 등록]
+    F --> G[미관측 1,200개 레이아웃 봉인 평가]
 ```
 
-| Split | Layouts | Episodes | Expert action samples |
+| 데이터 구분 | 레이아웃 | 에피소드 | 전문가 행동 샘플 |
 |---|---:|---:|---:|
-| Train | 100 | 400 | 5,327 |
-| Validation | 50 | 200 | 2,654 |
-| Test | 400 | 1,600 | 21,006 |
-| Sealed holdout | 1,200 | 4,800 | 62,365 |
+| 학습 | 100 | 400 | 5,327 |
+| 검증 | 50 | 200 | 2,654 |
+| 테스트 | 400 | 1,600 | 21,006 |
+| 최종 봉인 Holdout | 1,200 | 4,800 | 62,365 |
 
-## Results
+## 최종 결과
 
-### Final sealed holdout
+### 봉인 Holdout 평가
 
-| Metric | Result |
+| 평가 지표 | 결과 |
 |---|---:|
-| Delivery success | **4,800 / 4,800 (100%)** |
-| Layouts with all episodes successful | **1,200 / 1,200** |
-| Shortest-path success | **4,535 / 4,800 (94.4792%)** |
-| Timeouts | **0** |
-| Mean normalized regret | **0.028606** |
-| Development-to-holdout gap | **0.5833 percentage points** |
+| 배송 성공 | **4,800 / 4,800 (100%)** |
+| 모든 에피소드에 성공한 레이아웃 | **1,200 / 1,200** |
+| 최단 경로 성공 | **4,535 / 4,800 (94.4792%)** |
+| 타임아웃 | **0건** |
+| 평균 정규화 Regret | **0.028606** |
+| 개발 세트–Holdout 차이 | **0.5833%p** |
 
-The final holdout was not used for further tuning after the result was viewed.
+봉인 Holdout 결과를 확인한 뒤에는 해당 결과에 맞춘 추가 튜닝을 진행하지 않았습니다.
 
-### Search-efficiency benchmark
+### 탐색 효율 벤치마크
 
-Bidirectional BFS was compared with standard BFS on 400 trajectories after five warm-up runs and 50 measured rounds.
+양방향 BFS와 기본 BFS를 400개 경로에서 비교했습니다. 5회 예열 후 50회 반복 측정했습니다.
 
-| Metric | Reduction vs. BFS |
+| 평가 지표 | BFS 대비 감소율 |
 |---|---:|
-| Expanded nodes | **42.7368%** |
-| Generated nodes | **26.8160%** |
-| Median runtime | **approximately 3.93%** |
+| 탐색 확장 노드 | **42.7368%** |
+| 생성 노드 | **26.8160%** |
+| 실행시간 중앙값 | **약 3.93%** |
 
-The node-count improvement is substantial, but the measured latency gain is modest. These metrics are therefore reported separately rather than described as a broad system-resource saving.
+탐색 노드 수는 크게 감소했지만 실제 실행시간 개선은 상대적으로 작았습니다. 따라서 노드 감소율을 서버 비용이나 시스템 전체 자원 절감률로 확대하지 않고 별도 지표로 보고했습니다.
 
-## Engineering quality
+## 엔지니어링 품질
 
-- **114 automated tests** passing across 25 test files.
-- **24 documented experiments** from baseline through the final holdout.
-- All six exact solvers agreed on optimal cost for every reachable state in a 3×3 exhaustive validation: **6,792 reachable cases out of 9,216 total cases**.
-- Observation replay matched all **5,327 / 5,327** state samples with zero vector mismatch.
+- 25개 테스트 파일에서 **자동화 테스트 114개 통과**
+- Baseline부터 최종 봉인 평가까지 **24개 실험 기록**
+- 3×3 전체 상태 공간 **9,216건**을 검증하고, 도달 가능한 6,792건에서 정확 Solver 6종의 최적 비용이 모두 일치하는지 확인
+- 상태·격자·벡터·행동 마스크 **5,327 / 5,327개** 재생 검증, 벡터 오차 및 불일치 0건
 
-## Key learning
+## 핵심 문제 해결 경험
 
-High offline classification accuracy did not guarantee strong rollout performance. For example, a model could predict expert actions accurately under teacher forcing yet enter cycles when its own previous action changed the next state. I therefore treated grouped OOF metrics and end-to-end rollout success as complementary—not interchangeable—evaluation layers.
+Teacher-forced OOF 정확도가 높은 모델도 실제 Rollout에서는 순환 경로에 빠질 수 있었습니다. 정답 행동이 주어진 상태에서의 분류 성능과, 모델이 선택한 행동으로 다음 상태가 바뀌는 실제 정책 성능이 서로 다른 문제였기 때문입니다.
 
-## Scope and limitations
+이에 다음과 같이 검증 구조를 개선했습니다.
 
-- Results come from a finite synthetic 8×8 environment, not a physical robot fleet.
-- Delivery success must not be interpreted as production reliability, operational cost savings, or real-world safety performance.
-- Search-node reductions do not directly equal CPU, memory, or cloud-cost reductions.
-- The private source repository can be reviewed separately when appropriate.
+1. 레이아웃 단위 Group CV로 데이터 누수 차단
+2. OOF 분류 지표와 에피소드 Rollout 성능 분리
+3. 순환 경로를 차단하는 Decoder 적용
+4. 개발 세트와 완전히 분리된 봉인 Holdout 운영
+5. 최종 정책과 평가기를 결과 확인 전에 사전 등록
 
-## Resume-ready summary
+## 한계와 해석 범위
 
-> Combined exact route search with an imitation-learning ensemble for an 8×8 robot-delivery environment, then validated the preregistered policy on 4,800 sealed-holdout episodes, achieving 100% delivery success, 94.48% shortest-path success, and zero timeouts. A bidirectional BFS benchmark reduced expanded nodes by 42.7% and generated nodes by 26.8% versus standard BFS.
+- 결과는 제한된 8×8 합성 환경에서 측정했으며 실제 로봇 Fleet의 운영 결과가 아닙니다.
+- 배송 성공률을 실제 서비스 신뢰성·안전성·비용 절감률로 해석하지 않습니다.
+- 탐색 노드 감소율은 CPU·메모리·클라우드 비용 감소율과 동일하지 않습니다.
+- 원본 구현과 측정 로그는 비공개 저장소에서 별도로 관리합니다.
+
+## 자기소개서 활용 문장
+
+> Teacher-forced OOF 지표가 실제 Rollout 성능과 다르게 나타나는 문제를 발견했습니다. 이에 레이아웃 단위 Group CV와 실제 에피소드 평가를 분리하고, 정책·평가기·데이터 해시를 사전 등록한 뒤 1,200개 미관측 레이아웃으로 봉인 평가했습니다. 결과 확인 후 추가 튜닝을 중단해 검증 누수를 통제했고, 개발 대비 0.58%p 차이로 최단 경로 성공률 94.48%를 재현했습니다.
 
 ---
 
-This repository is a sanitized portfolio summary. It does not contain the original dataset, private implementation, or trained model artifacts.
+이 저장소는 채용 포트폴리오를 위한 공개 요약본입니다. 원본 데이터·구현 코드·학습 모델은 포함하지 않습니다.
