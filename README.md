@@ -6,6 +6,18 @@
 [![Validation](https://img.shields.io/badge/Sealed_Holdout-4%2C800_episodes-2E8B57)](#results)
 [![Tests](https://img.shields.io/badge/Automated_Tests-114_passing-4C8BF5)](#engineering-quality)
 
+## 한눈에 보기
+
+8×8 로봇 배송 환경에서 **정확 경로 탐색과 ML 모방 정책을 결합**하고, 개발 과정과 분리된 봉인 Holdout으로 일반화 성능을 검증한 프로젝트입니다.
+
+- 봉인 Holdout **1,200개 미관측 레이아웃·4,800개 에피소드**
+- 배송 성공률 **100%**, 최단 경로 성공률 **94.48%**, 타임아웃 **0건**
+- 양방향 BFS로 단방향 BFS 대비 탐색 확장 노드 **42.7%**, 생성 노드 **26.8% 감소**
+- 정책·평가기·데이터 해시를 결과 확인 전에 사전 등록하여 평가 누수 통제
+- 정확 Solver **6종**, ML 모델 **8종**, 실험 **24개**, 자동화 테스트 **114개**
+
+> **이력서 요약:** 정확 경로 탐색과 ML 모방 정책을 결합하고, 정책·평가기를 사전 등록한 봉인 Holdout 4,800개 에피소드에서 배송 성공률 100%·최단 경로 성공률 94.48%·타임아웃 0건을 검증했습니다.
+
 ## Overview
 
 This portfolio page summarizes a Kaggle-style robot-delivery project conducted in a private development repository. The task is to navigate an 8×8 grid, pick up an item, and deliver it while minimizing path length and avoiding cycles or timeouts.
