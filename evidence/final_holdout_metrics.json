@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "artifact_type": "sanitized_final_holdout_metrics",
+  "source_experiment": "E024",
+  "evaluation_protocol": "official_one_shot",
+  "evaluation_scope": {
+    "layout_count": 1200,
+    "episode_count": 4800,
+    "development_layout_overlap_count": 0
+  },
+  "preregistered_criteria": {
+    "delivery_success_count": 4800,
+    "optimal_success_rate_strictly_greater_than": 0.9,
+    "minimum_optimal_success_count": 4321
+  },
+  "metrics": {
+    "delivery_success_count": 4800,
+    "delivery_success_rate": 1.0,
+    "all_episodes_success_layout_count": 1200,
+    "timeout_count": 0,
+    "optimal_success_count": 4535,
+    "optimal_success_rate": 0.9447916666666667,
+    "mean_normalized_regret": 0.02860600610706794,
+    "repeated_state_episode_count": 199,
+    "repeated_state_action_episode_count": 115
+  },
+  "integrity_controls": {
+    "policy_frozen_before_evaluation": true,
+    "clean_worktree_required_at_start": true,
+    "input_hashes_verified_before_run": true,
+    "official_execution_count": 1,
+    "bfs_used_for_action_selection": false,
+    "post_result_tuning_permitted": false
+  }
+}
